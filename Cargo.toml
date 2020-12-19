@@ -1,5 +1,6 @@
 [package]
 name = "ninja-rss"
+description = "Rss feed reader"
 version = "0.1.0"
 authors = ["Zanfer322 <edupugantiarun@gmail.com>"]
 edition = "2018"
