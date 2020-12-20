@@ -1,5 +1,5 @@
 #[macro_use]
 extern crate diesel;
 
-mod database;
-mod rss;
+pub mod database;
+pub mod feeds;

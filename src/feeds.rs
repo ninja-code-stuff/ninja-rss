@@ -4,6 +4,7 @@ use diesel::sqlite::SqliteConnection;
 use rss::Channel;
 use std::error::Error;
 
+#[derive(Debug)]
 pub struct Feed {
     pub id: u64,
     pub url: String,
@@ -20,11 +21,10 @@ fn convert(db_feed: DbFeed) -> Feed {
     }
 }
 
-pub async fn add(conn: &SqliteConnection, url: &str) -> Result<Feed, Box<dyn Error>> {
-    let content = reqwest::get(url).await?.bytes().await?;
-    let channel = Channel::read_from(&content[..])?;
+pub fn add(conn: &SqliteConnection, url: &str) -> Result<Feed, Box<dyn Error>> {
+    let channel = Channel::from_url(url)?;
     let new_feed = NewFeed {
-        url: url,
+        url,
         title: channel.title(),
         description: Some(channel.description()),
     };

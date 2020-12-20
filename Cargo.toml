@@ -6,8 +6,7 @@ authors = ["Zanfer322 <edupugantiarun@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-rss = "1.9"
+rss = { version = "1.9", features = ["from_url"] }
 clap = "2.33"
-diesel = { version = "1.4.4", features = ["sqlite"] }
-dotenv = "0.15.0"
-reqwest = "0.10.10"
+diesel = { version = "1.4", features = ["sqlite"] }
+dotenv = "0.15"
