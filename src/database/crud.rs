@@ -31,3 +31,62 @@ pub fn delete_feed(conn: &SqliteConnection, id: i32) -> Result<(), Box<dyn Error
     diesel::delete(feeds::table.find(id)).execute(conn)?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    fn get_conn() -> SqliteConnection {
+        let conn = SqliteConnection::establish(":memory:").unwrap();
+        embed_migrations!();
+        embedded_migrations::run(&conn).unwrap();
+        return conn;
+    }
+
+    #[test]
+    fn test_add() {
+        let conn = get_conn();
+        let new_feed = NewFeed {
+            url: "url",
+            title: "title",
+            description: Some("description"),
+        };
+        let feed = create_feed(&conn, &new_feed).unwrap();
+        assert_eq!(feed.id, 1);
+    }
+
+    #[test]
+    fn test_list() {
+        let conn = get_conn();
+        let new_feed = NewFeed {
+            url: "url",
+            title: "title",
+            description: Some("description"),
+        };
+        create_feed(&conn, &new_feed).unwrap();
+        create_feed(&conn, &new_feed).unwrap();
+
+        let feeds = get_all_feeds(&conn).unwrap();
+        assert_eq!(feeds.len(), 2);
+    }
+
+    #[test]
+    fn test_delete() {
+        let conn = get_conn();
+        let new_feed = NewFeed {
+            url: "url",
+            title: "title",
+            description: Some("description"),
+        };
+        create_feed(&conn, &new_feed).unwrap();
+        create_feed(&conn, &new_feed).unwrap();
+
+        delete_feed(&conn, 2).unwrap();
+        let feeds = get_all_feeds(&conn).unwrap();
+        assert_eq!(feeds.len(), 1);
+
+        delete_feed(&conn, 5).unwrap();
+        assert_eq!(feeds.len(), 1);
+    }
+}
