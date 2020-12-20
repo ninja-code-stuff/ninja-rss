@@ -27,13 +27,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             let url = arg
                 .value_of("url")
                 .ok_or("could not get url argument for add")?;
-            ninja_rss::feeds::add(&ninja_rss::database::crud::get_conn()?, url)?;
+            ninja_rss::rss_manager::get_rss_manager()?.add(url)?;
         }
         ("list", Some(_)) => {
-            println!(
-                "{:#?}",
-                ninja_rss::feeds::list(&ninja_rss::database::crud::get_conn()?)
-            );
+            println!("{:#?}", ninja_rss::rss_manager::get_rss_manager()?.list()?);
         }
         _ => {
             eprintln!("{}", matches.usage());

@@ -2,4 +2,4 @@
 extern crate diesel;
 
 pub mod database;
-pub mod feeds;
+pub mod rss_manager;
