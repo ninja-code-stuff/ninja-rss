@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use clap::App;
 
 #[macro_use]
@@ -18,19 +20,26 @@ fn create_app() -> App<'static, 'static> {
     )
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let matches = create_app().get_matches();
     match matches.subcommand() {
         ("add", Some(arg)) => {
-            println!("add reached with url {}", arg.value_of("url").unwrap())
+            let url = arg
+                .value_of("url")
+                .ok_or("could not get url argument for add")?;
+            ninja_rss::feeds::add(&ninja_rss::database::crud::get_conn()?, url)?;
         }
         ("list", Some(_)) => {
-            println!("list reached")
+            println!(
+                "{:#?}",
+                ninja_rss::feeds::list(&ninja_rss::database::crud::get_conn()?)
+            );
         }
         _ => {
             eprintln!("{}", matches.usage());
         }
     }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -43,7 +52,7 @@ mod tests {
         let matches = create_app().get_matches_from(vec!["ninja_rss", "add", "url"]);
         assert!(matches.subcommand_matches("add").is_some());
         let args = matches.subcommand_matches("add").unwrap();
-        assert_eq!(args.value_of("url"),Some("url"));
+        assert_eq!(args.value_of("url"), Some("url"));
     }
 
     #[test]
