@@ -3,7 +3,7 @@ use std::error::Error;
 extern crate comfy_table;
 
 use comfy_table::{presets::UTF8_FULL, Attribute, Cell, Color, ContentArrangement, Table};
-use ninja_rss::rss_manager::Feed;
+use ninja_rss::rss_manager::{RssManager, Feed};
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
@@ -62,9 +62,7 @@ fn feeds_to_table(feed_list: Vec<Feed>) -> Table {
     table
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let opt = Opt::from_args();
-
+fn init_rss_manager() -> Result<RssManager, Box<dyn Error>>{
     // TODO: pass this as parameter
     let mut local_path = dirs::data_local_dir().unwrap();
     local_path.push("ninja_rss");
@@ -75,7 +73,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     // TODO: try to migrate only on update
     let rss_manger = ninja_rss::rss_manager::get_rss_manager()?;
     rss_manger.update_schema()?;
+    Ok(rss_manger)
+}
 
+fn main() -> Result<(), Box<dyn Error>> {
+    let opt = Opt::from_args();
+    let rss_manger = init_rss_manager()?;
     match opt {
         Opt::Add { url } => {
             println!("{}", feed_to_table(rss_manger.add(&url)?));
