@@ -1,11 +1,17 @@
 [package]
 name = "ninja-rss"
+description = "Rss feed reader"
 version = "0.1.0"
-authors = ["Zanfer322 <edupugantiarun@gmail.com>"]
+authors = [
+	"Zanfer322 <edupugantiarun@gmail.com>",
+	"sak96 <26397224+sak96@users.noreply.github.com>",
+]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-rss = "1.9"
-clap = "2.33"
+rss = { version = "1.9", features = ["from_url"] }
+structopt = "0.3"
+prettytable-rs = "0.8"
+diesel = { version = "1.4", features = ["sqlite"] }
+diesel_migrations = "1.4"
+dotenv = "0.15"
