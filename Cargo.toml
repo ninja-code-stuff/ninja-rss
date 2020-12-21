@@ -10,7 +10,8 @@ edition = "2018"
 
 [dependencies]
 rss = { version = "1.9", features = ["from_url"] }
-clap = "2.33"
+structopt = "0.3"
+prettytable-rs = "0.8"
 diesel = { version = "1.4", features = ["sqlite"] }
 diesel_migrations = "1.4"
 dotenv = "0.15"

@@ -79,4 +79,8 @@ impl<T: FeedFetcher> RssManager<T> {
         let db_feeds = crud::get_all_feeds(&self.conn)?;
         Ok(db_feeds.into_iter().map(convert).collect())
     }
+
+    pub fn delete(&self, id: i32) -> Result<(), Box<dyn Error>> {
+        crud::delete_feed(&self.conn, id)
+    }
 }
