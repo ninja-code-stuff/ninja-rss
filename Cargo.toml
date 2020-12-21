@@ -9,7 +9,8 @@ authors = [
 edition = "2018"
 
 [dependencies]
-rss = { version = "1.9", features = ["from_url"] }
+rss = "1.9"
+http_req = "0.7"
 structopt = "0.3"
 prettytable-rs = "0.8"
 diesel = { version = "1.4", features = ["sqlite"] }
