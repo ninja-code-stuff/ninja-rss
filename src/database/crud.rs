@@ -6,6 +6,12 @@ use dotenv::dotenv;
 use std::env;
 use std::error::Error;
 
+pub fn update_schema(conn: &SqliteConnection) -> Result<(), Box<dyn Error>> {
+    embed_migrations!();
+    embedded_migrations::run(conn)?;
+    Ok(())
+}
+
 pub fn get_conn() -> Result<SqliteConnection, Box<dyn Error>> {
     dotenv().ok();
     let url = env::var("DATABASE_URL")?;
@@ -39,8 +45,7 @@ mod tests {
 
     fn get_conn() -> SqliteConnection {
         let conn = SqliteConnection::establish(":memory:").unwrap();
-        embed_migrations!();
-        embedded_migrations::run(&conn).unwrap();
+        update_schema(&conn).unwrap();
         return conn;
     }
 

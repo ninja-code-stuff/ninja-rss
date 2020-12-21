@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate diesel;
 
-#[cfg(test)]
 #[macro_use]
 extern crate diesel_migrations;
 

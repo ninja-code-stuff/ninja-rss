@@ -19,6 +19,10 @@ impl RssManager {
         RssManager { conn }
     }
 
+    pub fn update_schema(&self) -> Result<(), Box<dyn Error>> {
+        crud::update_schema(&self.conn)
+    }
+
     #[cfg(not(test))]
     fn fetch(&self, uri: &str) -> Result<Channel, Box<dyn Error>> {
         // https://users.rust-lang.org/t/lightweight-alternative-for-reqwest/33601/21
