@@ -2,7 +2,7 @@ use std::error::Error;
 
 extern crate comfy_table;
 
-use comfy_table::{Attribute, Cell, Color, ContentArrangement, Table};
+use comfy_table::{presets::UTF8_FULL, Attribute, Cell, Color, ContentArrangement, Table};
 use ninja_rss::rss_manager::Feed;
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
@@ -28,6 +28,7 @@ fn feed_to_table(feed: Feed) -> Table {
         ]
     };
     let mut table = Table::new();
+    table.load_preset(UTF8_FULL);
     table.set_content_arrangement(ContentArrangement::Dynamic);
     table.add_row(create_row("Id", &feed.id.to_string()));
     table.add_row(create_row("Title", &feed.title));
@@ -43,6 +44,7 @@ fn feeds_to_table(feed_list: Vec<Feed>) -> Table {
             .fg(Color::Green)
     };
     let mut table = Table::new();
+    table.load_preset(UTF8_FULL);
     table.set_content_arrangement(ContentArrangement::Dynamic);
     table.set_header(
         vec!["Id", "Title", "Description", "Url"]
