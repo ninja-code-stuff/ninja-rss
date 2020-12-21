@@ -1,5 +1,5 @@
-use super::models::{Feed, NewFeed};
-use super::schema::feeds;
+use super::models::{Feed, FeedItem, NewFeed, NewFeedItem};
+use super::schema::{feed_items, feeds};
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
 use dotenv::dotenv;
@@ -36,6 +36,31 @@ pub fn create_feed(conn: &SqliteConnection, new_feed: &NewFeed) -> Result<Feed, 
 pub fn delete_feed(conn: &SqliteConnection, id: i32) -> Result<(), Box<dyn Error>> {
     diesel::delete(feeds::table.find(id)).execute(conn)?;
     Ok(())
+}
+
+pub fn get_all_feed_items(
+    conn: &SqliteConnection,
+    feed_id: i32,
+) -> Result<Vec<FeedItem>, Box<dyn Error>> {
+    let res = feed_items::table
+        .filter(feed_items::feed_id.eq(feed_id))
+        .get_results(conn)?;
+    Ok(res)
+}
+
+pub fn create_feed_items(
+    conn: &SqliteConnection,
+    items: &[NewFeedItem],
+) -> Result<Vec<FeedItem>, Box<dyn Error>> {
+    diesel::insert_into(feed_items::table)
+        .values(items)
+        .execute(conn)?;
+
+    let post = feed_items::table
+        .order(feed_items::id.desc())
+        .limit(items.len() as i64)
+        .get_results(conn)?;
+    Ok(post)
 }
 
 #[cfg(test)]
@@ -93,5 +118,74 @@ mod tests {
 
         delete_feed(&conn, 5).unwrap();
         assert_eq!(feeds.len(), 1);
+    }
+
+    #[test]
+    fn test_feed_items_creation() {
+        let conn = get_conn();
+        let new_feed = NewFeed {
+            url: "url",
+            title: "title",
+            description: "description",
+        };
+        let feed = create_feed(&conn, &new_feed).unwrap();
+        let new_feed_item = NewFeedItem {
+            feed_id: feed.id,
+            guid: Some("hi"),
+            title: "title",
+            summary: "summary",
+            link: "link",
+        };
+        create_feed_items(&conn, &[new_feed_item]).unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_duplicate_guid_feed_items() {
+        let conn = get_conn();
+        let new_feed = NewFeed {
+            url: "url",
+            title: "title",
+            description: "description",
+        };
+        let feed = create_feed(&conn, &new_feed).unwrap();
+        let new_feed_item = NewFeedItem {
+            feed_id: feed.id,
+            guid: Some("hi"),
+            title: "title",
+            summary: "summary",
+            link: "link",
+        };
+
+        let items = &[new_feed_item];
+
+        create_feed_items(&conn, items).unwrap();
+        create_feed_items(&conn, items).unwrap();
+    }
+
+    #[test]
+    fn test_cascade_delete() {
+        let conn = get_conn();
+        let new_feed = NewFeed {
+            url: "url",
+            title: "title",
+            description: "description",
+        };
+        let feed = create_feed(&conn, &new_feed).unwrap();
+        let new_feed_item = NewFeedItem {
+            feed_id: feed.id,
+            guid: Some("hi"),
+            title: "title",
+            summary: "summary",
+            link: "link",
+        };
+        create_feed_items(&conn, &[new_feed_item]).unwrap();
+
+        let items = get_all_feed_items(&conn, feed.id).unwrap();
+        assert_eq!(items.len(), 1);
+
+        delete_feed(&conn, feed.id).unwrap();
+        let items = get_all_feed_items(&conn, feed.id).unwrap();
+        assert_eq!(items.len(), 0);
     }
 }
