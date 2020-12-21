@@ -1,5 +1,10 @@
 use std::error::Error;
 
+#[macro_use]
+extern crate prettytable;
+
+use ninja_rss::rss_manager::Feed;
+use prettytable::Table;
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
@@ -14,16 +19,40 @@ enum Opt {
     List,
 }
 
+fn feed_to_table(feed: Feed) -> Table {
+    let mut table = Table::new();
+    table.add_row(row![bFg -> "Id", feed.id]);
+    table.add_row(row![bFg -> "Title", b -> feed.title]);
+    table.add_row(row![bFg -> "Description", feed.description]);
+    table.add_row(row![bFg -> "Url", i -> feed.url]);
+    table
+}
+
+fn feeds_to_table(feed_list: Vec<Feed>) -> Table {
+    let mut table = Table::new();
+    // table.add_row(row![bFg->"foobar", BriH2->"bar", "foo"]);
+    table.set_titles(row![bFg -> "Id", bFg -> "Title", bFg -> "Description", bFg-> "Url"]);
+    for feed in feed_list {
+        table.add_row(row![
+            feed.id,
+            bc -> feed.title,
+            feed.description,
+            i -> feed.url,
+        ]);
+    }
+    table
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     match Opt::from_args() {
         Opt::Add { url } => {
-            ninja_rss::rss_manager::get_rss_manager()?.add(&url)?;
+            feed_to_table(ninja_rss::rss_manager::get_rss_manager()?.add(&url)?).printstd();
         }
         Opt::Del { id } => {
             ninja_rss::rss_manager::get_rss_manager()?.delete(id)?;
         }
         Opt::List => {
-            println!("{:#?}", ninja_rss::rss_manager::get_rss_manager()?.list()?);
+            feeds_to_table(ninja_rss::rss_manager::get_rss_manager()?.list()?).printstd();
         }
     }
     Ok(())
