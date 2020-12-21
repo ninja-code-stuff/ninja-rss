@@ -3,6 +3,6 @@ table! {
         id -> Integer,
         url -> Text,
         title -> Text,
-        description -> Nullable<Text>,
+        description -> Text,
     }
 }

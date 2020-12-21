@@ -1,11 +1,11 @@
 use super::schema::feeds;
 
 #[derive(Queryable, Debug)]
-pub struct DbFeed {
+pub struct Feed {
     pub id: i32,
     pub url: String,
     pub title: String,
-    pub description: Option<String>,
+    pub description: String,
 }
 
 #[derive(Insertable)]
@@ -13,5 +13,5 @@ pub struct DbFeed {
 pub struct NewFeed<'a> {
     pub url: &'a str,
     pub title: &'a str,
-    pub description: Option<&'a str>,
+    pub description: &'a str,
 }

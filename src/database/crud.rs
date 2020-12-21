@@ -1,4 +1,4 @@
-use super::models::{DbFeed, NewFeed};
+use super::models::{Feed, NewFeed};
 use super::schema::feeds;
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
@@ -13,12 +13,12 @@ pub fn get_conn() -> Result<SqliteConnection, Box<dyn Error>> {
     Ok(conn)
 }
 
-pub fn get_all_feeds(conn: &SqliteConnection) -> Result<Vec<DbFeed>, Box<dyn Error>> {
+pub fn get_all_feeds(conn: &SqliteConnection) -> Result<Vec<Feed>, Box<dyn Error>> {
     let res = feeds::table.get_results(conn)?;
     Ok(res)
 }
 
-pub fn create_feed(conn: &SqliteConnection, new_feed: &NewFeed) -> Result<DbFeed, Box<dyn Error>> {
+pub fn create_feed(conn: &SqliteConnection, new_feed: &NewFeed) -> Result<Feed, Box<dyn Error>> {
     diesel::insert_into(feeds::table)
         .values(new_feed)
         .execute(conn)?;
@@ -50,7 +50,7 @@ mod tests {
         let new_feed = NewFeed {
             url: "url",
             title: "title",
-            description: Some("description"),
+            description: "description",
         };
         let feed = create_feed(&conn, &new_feed).unwrap();
         assert_eq!(feed.id, 1);
@@ -62,7 +62,7 @@ mod tests {
         let new_feed = NewFeed {
             url: "url",
             title: "title",
-            description: Some("description"),
+            description: "description",
         };
         create_feed(&conn, &new_feed).unwrap();
         create_feed(&conn, &new_feed).unwrap();
@@ -77,7 +77,7 @@ mod tests {
         let new_feed = NewFeed {
             url: "url",
             title: "title",
-            description: Some("description"),
+            description: "description",
         };
         create_feed(&conn, &new_feed).unwrap();
         create_feed(&conn, &new_feed).unwrap();
