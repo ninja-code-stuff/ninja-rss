@@ -63,21 +63,28 @@ fn feeds_to_table(feed_list: Vec<Feed>) -> Table {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    match Opt::from_args() {
+    let opt = Opt::from_args();
+
+    // TODO: pass this as parameter
+    let mut local_path = dirs::data_local_dir().unwrap();
+    local_path.push("ninja_rss");
+    std::fs::create_dir_all(&local_path)?;
+    local_path.push("rss.db");
+    std::env::set_var("DATABASE_URL", local_path.into_os_string());
+
+    // TODO: try to migrate only on update
+    let rss_manger = ninja_rss::rss_manager::get_rss_manager()?;
+    rss_manger.update_schema()?;
+
+    match opt {
         Opt::Add { url } => {
-            println!(
-                "{}",
-                feed_to_table(ninja_rss::rss_manager::get_rss_manager()?.add(&url)?)
-            );
+            println!("{}", feed_to_table(rss_manger.add(&url)?));
         }
         Opt::Del { id } => {
-            ninja_rss::rss_manager::get_rss_manager()?.delete(id)?;
+            rss_manger.delete(id)?;
         }
         Opt::List => {
-            println!(
-                "{}",
-                feeds_to_table(ninja_rss::rss_manager::get_rss_manager()?.list()?)
-            );
+            println!("{}", feeds_to_table(rss_manger.list()?));
         }
     }
     Ok(())

@@ -16,3 +16,4 @@ comfy-table = "1.4"
 diesel = { version = "1.4", features = ["sqlite"] }
 diesel_migrations = "1.4"
 dotenv = "0.15"
+dirs = "3.0"
