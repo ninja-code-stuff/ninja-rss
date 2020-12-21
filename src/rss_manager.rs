@@ -3,8 +3,6 @@ use super::database::models::{DbFeed, NewFeed};
 use diesel::sqlite::SqliteConnection;
 use rss::Channel;
 use std::error::Error;
-use std::fs::File;
-use std::io::BufReader;
 
 #[derive(Debug)]
 pub struct Feed {
@@ -23,48 +21,37 @@ fn convert(db_feed: DbFeed) -> Feed {
     }
 }
 
-pub trait FeedFetcher {
-    fn fetch(&self, uri: &str) -> Result<Channel, Box<dyn Error>>;
+pub struct RssManager {
+    conn: SqliteConnection,
 }
 
-pub struct UrlFeedFetcher;
+pub fn get_rss_manager() -> Result<RssManager, Box<dyn Error>> {
+    let conn = crud::get_conn()?;
+    Ok(RssManager { conn })
+}
 
-impl FeedFetcher for UrlFeedFetcher {
+impl RssManager {
+    pub fn new(conn: SqliteConnection) -> Self {
+        RssManager { conn }
+    }
+
+    #[cfg(not(test))]
     fn fetch(&self, uri: &str) -> Result<Channel, Box<dyn Error>> {
         let channel = Channel::from_url(uri)?;
         Ok(channel)
     }
-}
 
-pub struct FileFeedFetcher;
-
-impl FeedFetcher for FileFeedFetcher {
+    // Note: This swapping is done to avoid network call for testing
+    #[cfg(test)]
     fn fetch(&self, uri: &str) -> Result<Channel, Box<dyn Error>> {
-        let file = File::open(uri)?;
-        let reader = BufReader::new(file);
+        let file = std::fs::File::open(uri)?;
+        let reader = std::io::BufReader::new(file);
         let channel = Channel::read_from(reader)?;
         Ok(channel)
     }
-}
-
-pub struct RssManager<T: FeedFetcher> {
-    conn: SqliteConnection,
-    fetcher: T,
-}
-
-pub fn get_rss_manager() -> Result<RssManager<UrlFeedFetcher>, Box<dyn Error>> {
-    let conn = crud::get_conn()?;
-    let fetcher = UrlFeedFetcher;
-    Ok(RssManager { conn, fetcher })
-}
-
-impl<T: FeedFetcher> RssManager<T> {
-    pub fn new(conn: SqliteConnection, fetcher: T) -> Self {
-        RssManager { conn, fetcher }
-    }
 
     pub fn add(&self, uri: &str) -> Result<Feed, Box<dyn Error>> {
-        let channel = self.fetcher.fetch(uri)?;
+        let channel = self.fetch(uri)?;
 
         let new_feed = NewFeed {
             url: uri,
