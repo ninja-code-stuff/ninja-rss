@@ -1,8 +1,10 @@
+use crate::database::models::FeedItem;
+
 use super::database::crud;
 pub use super::database::models::Feed;
-use super::database::models::NewFeed;
+use super::database::models::{NewFeed, NewFeedItem};
 use diesel::sqlite::SqliteConnection;
-use rss::Channel;
+use rss::{Channel, Item};
 use std::error::Error;
 
 pub struct RssManager {
@@ -49,7 +51,23 @@ impl RssManager {
             description: channel.description(),
         };
         let db_feed = crud::create_feed(&self.conn, &new_feed)?;
+        self.add_items(db_feed.id, channel.items())?;
         Ok(db_feed)
+    }
+
+    fn add_items(&self, feed_id: i32, items: &[Item]) -> Result<(), Box<dyn Error>> {
+        let items: Vec<NewFeedItem> = items
+            .iter()
+            .map(|it| NewFeedItem {
+                feed_id,
+                guid: it.guid().map(|x| x.value()),
+                title: it.title().unwrap_or(""),
+                summary: it.description().unwrap_or(""),
+                link: it.link().unwrap_or(""),
+            })
+            .collect();
+        crud::create_feed_items(&self.conn, &items)?;
+        Ok(())
     }
 
     pub fn list(&self) -> Result<Vec<Feed>, Box<dyn Error>> {
@@ -59,5 +77,22 @@ impl RssManager {
 
     pub fn delete(&self, id: i32) -> Result<(), Box<dyn Error>> {
         crud::delete_feed(&self.conn, id)
+    }
+
+    pub fn get_items(&self, id: i32) -> Result<Vec<FeedItem>, Box<dyn Error>> {
+        Ok(crud::get_all_feed_items(&self.conn, id)?)
+    }
+
+    pub fn refresh(&self, id: i32) -> Result<Feed, Box<dyn Error>> {
+        let feed = crud::get_feed(&self.conn, id)?;
+        let ch = self.fetch(&feed.url)?;
+        let new_feed = Feed {
+            title: ch.title().to_string(),
+            description: ch.description().to_string(),
+            ..feed
+        };
+        crud::update_feed(&self.conn, &new_feed)?;
+        self.add_items(id, ch.items())?;
+        Ok(new_feed)
     }
 }
