@@ -1,10 +1,9 @@
 use std::error::Error;
 
-#[macro_use]
-extern crate prettytable;
+extern crate comfy_table;
 
-use ninja_rss::rss_manager::Feed;
-use prettytable::Table;
+use comfy_table::{presets::UTF8_FULL, Attribute, Cell, Color, ContentArrangement, Table};
+use ninja_rss::rss_manager::{RssManager, Feed};
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
@@ -20,39 +19,75 @@ enum Opt {
 }
 
 fn feed_to_table(feed: Feed) -> Table {
+    let create_row = |header: &str, value: &str| {
+        vec![
+            Cell::new(header)
+                .add_attribute(Attribute::Bold)
+                .fg(Color::Green),
+            Cell::new(value),
+        ]
+    };
     let mut table = Table::new();
-    table.add_row(row![bFg -> "Id", feed.id]);
-    table.add_row(row![bFg -> "Title", b -> feed.title]);
-    table.add_row(row![bFg -> "Description", feed.description]);
-    table.add_row(row![bFg -> "Url", i -> feed.url]);
+    table.load_preset(UTF8_FULL);
+    table.set_content_arrangement(ContentArrangement::Dynamic);
+    table.add_row(create_row("Id", &feed.id.to_string()));
+    table.add_row(create_row("Title", &feed.title));
+    table.add_row(create_row("Description", &feed.description));
+    table.add_row(create_row("Url", &feed.url));
     table
 }
 
 fn feeds_to_table(feed_list: Vec<Feed>) -> Table {
+    let set_header_style = |header: &str| {
+        Cell::new(header)
+            .add_attribute(Attribute::Bold)
+            .fg(Color::Green)
+    };
     let mut table = Table::new();
-    // table.add_row(row![bFg->"foobar", BriH2->"bar", "foo"]);
-    table.set_titles(row![bFg -> "Id", bFg -> "Title", bFg -> "Description", bFg-> "Url"]);
+    table.load_preset(UTF8_FULL);
+    table.set_content_arrangement(ContentArrangement::Dynamic);
+    table.set_header(
+        vec!["Id", "Title", "Description", "Url"]
+            .into_iter()
+            .map(set_header_style),
+    );
     for feed in feed_list {
-        table.add_row(row![
-            feed.id,
-            bc -> feed.title,
+        table.add_row(vec![
+            feed.id.to_string(),
+            feed.title,
             feed.description,
-            i -> feed.url,
+            feed.url,
         ]);
     }
     table
 }
 
+fn init_rss_manager() -> Result<RssManager, Box<dyn Error>>{
+    // TODO: pass this as parameter
+    let mut local_path = dirs::data_local_dir().unwrap();
+    local_path.push("ninja_rss");
+    std::fs::create_dir_all(&local_path)?;
+    local_path.push("rss.db");
+    std::env::set_var("DATABASE_URL", local_path.into_os_string());
+
+    // TODO: try to migrate only on update
+    let rss_manger = ninja_rss::rss_manager::get_rss_manager()?;
+    rss_manger.update_schema()?;
+    Ok(rss_manger)
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
-    match Opt::from_args() {
+    let opt = Opt::from_args();
+    let rss_manger = init_rss_manager()?;
+    match opt {
         Opt::Add { url } => {
-            feed_to_table(ninja_rss::rss_manager::get_rss_manager()?.add(&url)?).printstd();
+            println!("{}", feed_to_table(rss_manger.add(&url)?));
         }
         Opt::Del { id } => {
-            ninja_rss::rss_manager::get_rss_manager()?.delete(id)?;
+            rss_manger.delete(id)?;
         }
         Opt::List => {
-            feeds_to_table(ninja_rss::rss_manager::get_rss_manager()?.list()?).printstd();
+            println!("{}", feeds_to_table(rss_manger.list()?));
         }
     }
     Ok(())

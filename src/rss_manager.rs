@@ -19,10 +19,16 @@ impl RssManager {
         RssManager { conn }
     }
 
+    pub fn update_schema(&self) -> Result<(), Box<dyn Error>> {
+        crud::update_schema(&self.conn)
+    }
+
     #[cfg(not(test))]
     fn fetch(&self, uri: &str) -> Result<Channel, Box<dyn Error>> {
-        let channel = Channel::from_url(uri)?;
-        Ok(channel)
+        // https://users.rust-lang.org/t/lightweight-alternative-for-reqwest/33601/21
+        let mut content = Vec::new();
+        ::http_req::request::get(uri, &mut content)?;
+        Ok(Channel::read_from(&content[..])?)
     }
 
     // Note: This swapping is done to avoid network call for testing
