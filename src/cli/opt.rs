@@ -3,6 +3,14 @@ use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
 #[derive(Debug, PartialEq, StructOpt)]
+pub enum FeedOpt {
+    #[structopt(about = "List rss feed")]
+    List,
+    #[structopt(about = "Refresh rss feed")]
+    Refresh,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
 #[structopt(about, global_settings(&[AppSettings::ColoredHelp, AppSettings::VersionlessSubcommands]))]
 pub enum Opt {
     #[structopt(about = "Add rss feed by url")]
@@ -11,6 +19,13 @@ pub enum Opt {
     Del { id: i32 },
     #[structopt(about = "List rss feed")]
     List,
+    #[structopt(about = "Feed Operations")]
+    Feed {
+        #[structopt(short, long, about = "Feed Id")]
+        feed_id: i32,
+        #[structopt(subcommand)]
+        feed_opt: FeedOpt,
+    },
 }
 
 #[cfg(test)]

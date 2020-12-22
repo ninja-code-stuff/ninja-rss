@@ -3,7 +3,7 @@ mod display;
 mod opt;
 mod setup;
 
-use opt::Opt;
+use opt::{FeedOpt, Opt};
 use structopt::StructOpt;
 
 extern crate comfy_table;
@@ -21,6 +21,21 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         Opt::List => {
             println!("{}", display::feeds_to_table(rss_manger.list()?));
+        }
+        Opt::Feed {
+            feed_id,
+            feed_opt: FeedOpt::Refresh,
+        } => {
+            println!("{}", display::feed_to_table(rss_manger.refresh(feed_id)?));
+        }
+        Opt::Feed {
+            feed_id,
+            feed_opt: FeedOpt::List,
+        } => {
+            println!(
+                "{}",
+                display::feed_items_to_table(rss_manger.get_items(feed_id)?)
+            );
         }
     }
     Ok(())

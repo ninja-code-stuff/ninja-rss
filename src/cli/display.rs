@@ -1,5 +1,5 @@
 use comfy_table::{presets::UTF8_FULL, Attribute, Cell, Color, ContentArrangement, Table};
-use ninja_rss::rss_manager::Feed;
+use ninja_rss::{rss_manager::Feed, rss_manager::FeedItem};
 
 pub fn feed_to_table(feed: Feed) -> Table {
     let create_row = |header: &str, value: &str| {
@@ -40,6 +40,31 @@ pub fn feeds_to_table(feed_list: Vec<Feed>) -> Table {
             feed.title,
             feed.description,
             feed.url,
+        ]);
+    }
+    table
+}
+
+pub fn feed_items_to_table(feed_list: Vec<FeedItem>) -> Table {
+    let set_header_style = |header: &str| {
+        Cell::new(header)
+            .add_attribute(Attribute::Bold)
+            .fg(Color::Green)
+    };
+    let mut table = Table::new();
+    table.load_preset(UTF8_FULL);
+    table.set_content_arrangement(ContentArrangement::Dynamic);
+    table.set_header(
+        vec!["Id", "Title", "Summary", "Link"]
+            .into_iter()
+            .map(set_header_style),
+    );
+    for feed in feed_list {
+        table.add_row(vec![
+            feed.id.to_string(),
+            feed.title,
+            feed.summary,
+            feed.link,
         ]);
     }
     table
