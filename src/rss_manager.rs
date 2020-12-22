@@ -82,4 +82,17 @@ impl RssManager {
     pub fn get_items(&self, id: i32) -> Result<Vec<FeedItem>, Box<dyn Error>> {
         Ok(crud::get_all_feed_items(&self.conn, id)?)
     }
+
+    pub fn refresh(&self, id: i32) -> Result<Feed, Box<dyn Error>> {
+        let feed = crud::get_feed(&self.conn, id)?;
+        let ch = self.fetch(&feed.url)?;
+        let new_feed = Feed {
+            title: ch.title().to_string(),
+            description: ch.description().to_string(),
+            ..feed
+        };
+        crud::update_feed(&self.conn, &new_feed)?;
+        self.add_items(id, ch.items())?;
+        Ok(new_feed)
+    }
 }

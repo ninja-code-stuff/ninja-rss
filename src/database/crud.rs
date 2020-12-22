@@ -49,6 +49,21 @@ pub fn get_all_feed_items(
     Ok(res)
 }
 
+pub fn get_feed(conn: &SqliteConnection, feed_id: i32) -> Result<Feed, Box<dyn Error>> {
+    let res = feeds::table.find(feed_id).first(conn)?;
+    Ok(res)
+}
+
+pub fn update_feed(conn: &SqliteConnection, feed: &Feed) -> Result<(), Box<dyn Error>> {
+    diesel::update(feeds::table.find(feed.id))
+        .set((
+            feeds::title.eq(feed.title.as_str()),
+            feeds::description.eq(feed.description.as_str()),
+        ))
+        .execute(conn)?;
+    Ok(())
+}
+
 pub fn create_feed_items(
     conn: &SqliteConnection,
     items: &[NewFeedItem],
