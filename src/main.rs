@@ -10,11 +10,11 @@ use structopt::StructOpt;
 #[derive(Debug, PartialEq, StructOpt)]
 #[structopt(about, global_settings(&[AppSettings::ColoredHelp, AppSettings::VersionlessSubcommands]))]
 enum Opt {
-    #[structopt(no_version, about = "Add rss feed by url")]
+    #[structopt(about = "Add rss feed by url")]
     Add { url: String },
-    #[structopt(no_version, about = "Delete rss feed by id")]
+    #[structopt(about = "Delete rss feed by id")]
     Del { id: i32 },
-    #[structopt(no_version, about = "List rss feed")]
+    #[structopt(about = "List rss feed")]
     List,
 }
 
