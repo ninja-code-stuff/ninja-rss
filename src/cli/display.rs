@@ -1,7 +1,7 @@
 use comfy_table::{presets::UTF8_FULL, Attribute, Cell, Color, ContentArrangement, Table};
 use ninja_rss::{rss_manager::Feed, rss_manager::FeedItem};
 
-pub fn feed_to_table(feed: Feed) -> Table {
+pub fn feed_to_table(feed: Feed) -> String {
     let create_row = |header: &str, value: &str| {
         vec![
             Cell::new(header)
@@ -17,10 +17,10 @@ pub fn feed_to_table(feed: Feed) -> Table {
     table.add_row(create_row("Title", &feed.title));
     table.add_row(create_row("Description", &feed.description));
     table.add_row(create_row("Url", &feed.url));
-    table
+    table.to_string().replace('\r', " ")
 }
 
-pub fn feeds_to_table(feed_list: Vec<Feed>) -> Table {
+pub fn feeds_to_table(feed_list: Vec<Feed>) -> String {
     let set_header_style = |header: &str| {
         Cell::new(header)
             .add_attribute(Attribute::Bold)
@@ -42,10 +42,10 @@ pub fn feeds_to_table(feed_list: Vec<Feed>) -> Table {
             feed.url,
         ]);
     }
-    table
+    table.to_string().replace('\r', " ")
 }
 
-pub fn feed_items_to_table(feed_list: Vec<FeedItem>) -> Table {
+pub fn feed_items_to_table(feed_list: Vec<FeedItem>) -> String {
     let set_header_style = |header: &str| {
         Cell::new(header)
             .add_attribute(Attribute::Bold)
@@ -67,5 +67,5 @@ pub fn feed_items_to_table(feed_list: Vec<FeedItem>) -> Table {
             feed.link,
         ]);
     }
-    table
+    table.to_string().replace('\r', " ")
 }
