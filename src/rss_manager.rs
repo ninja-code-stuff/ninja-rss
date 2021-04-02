@@ -1,7 +1,5 @@
-use crate::database::models::FeedItem;
-
 use super::database::crud;
-pub use super::database::models::Feed;
+pub use super::database::models::{Feed, FeedItem};
 use super::database::models::{NewFeed, NewFeedItem};
 use diesel::sqlite::SqliteConnection;
 use rss::{Channel, Item};
