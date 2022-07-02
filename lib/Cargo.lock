@@ -476,21 +476,13 @@ dependencies = [
 name = "ninja-rss"
 version = "0.1.0"
 dependencies = [
+ "comfy-table",
  "diesel",
  "diesel_migrations",
+ "dirs",
  "dotenv",
  "http_req",
  "rss",
- "structopt",
-]
-
-[[package]]
-name = "ninja-rss-cli"
-version = "0.1.0"
-dependencies = [
- "comfy-table",
- "dirs",
- "ninja-rss",
  "structopt",
 ]
 

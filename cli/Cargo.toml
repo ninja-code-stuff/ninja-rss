@@ -1,0 +1,15 @@
+[package]
+name = "ninja-rss-cli"
+description = "Rss feed reader"
+version = "0.1.0"
+authors = [
+	"Zanfer322 <edupugantiarun@gmail.com>",
+	"sak96 <26397224+sak96@users.noreply.github.com>",
+]
+edition = "2018"
+
+[dependencies]
+ninja-rss = {path = "../lib"}
+structopt = "0.3"
+comfy-table = "1.4"
+dirs = "3.0"

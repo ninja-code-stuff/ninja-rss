@@ -1,0 +1,17 @@
+[package]
+name = "ninja-rss"
+description = "Rss feed reader"
+version = "0.1.0"
+authors = [
+	"Zanfer322 <edupugantiarun@gmail.com>",
+	"sak96 <26397224+sak96@users.noreply.github.com>",
+]
+edition = "2018"
+
+[dependencies]
+rss = "1.9"
+http_req = "0.7"
+structopt = "0.3"
+diesel = { version = "1.4", features = ["sqlite"] }
+diesel_migrations = "1.4"
+dotenv = "0.15"
