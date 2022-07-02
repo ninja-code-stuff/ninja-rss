@@ -8,10 +8,6 @@ authors = [
 ]
 edition = "2018"
 
-[[bin]]
-name = "ninja-rss"
-path = "src/cli/mod.rs"
-
 [dependencies]
 rss = "1.9"
 http_req = "0.7"
